@@ -94,7 +94,15 @@ class SimpleCaptchaHelper {
 	public function store($value='') {
 		# code...
 	}
-
+	
+	private function generate(){
+		
+		// Pick random background, get info, and start captcha
+		$background = $this->config['png_backgrounds'][rand(0, count($this->config['png_backgrounds']) -1)];
+		$background = $this->config['assets_path'].$background;
+		list($bg_width, $bg_height, $bg_type, $bg_attr) = getimagesize($background);
+		
+	}
 	
 	/**
 	 * hextorgb method recodes hex2rgb function
