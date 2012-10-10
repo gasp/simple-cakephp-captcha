@@ -1,6 +1,7 @@
-<?php  
+<?php 
+
 /** 
- * SimpleCaptchaHelper
+ * SimpleCaptchaComponent
  * 
  * @version 1.0 
  * @author gaspard from freelancis.com
@@ -9,9 +10,7 @@
  * 	@source https://github.com/claviska/simple-php-captcha
  * @license MIT Style License 
  */ 
-//App::uses('Helper', 'View');
-class SimpleCaptchaHelper { 
-//class SimpleCaptchaHelper extends AppHelper { 
+class CaptchaComponent extends Component { 
 	public $config = array(
 		'code' => '',
 		'min_length' => 5,
@@ -34,13 +33,13 @@ class SimpleCaptchaHelper {
 	);
 	
 	/**
-	 * construction method
+	 * creation method
 	 *
 	 * @param array $config 
 	 * @return string $code
 	 * @author gaspard
 	 */
-	public function __construct($config=array()) {
+	public function create($config=array()) {
 
 		// Check for GD library
 		if( !function_exists('gd_info') ) {
@@ -101,10 +100,14 @@ class SimpleCaptchaHelper {
 
 		// image path
 		$image_fullpath = $this->config['images_path'].$hash.'.png';
-
+		$image_fullurl = $this->config['images_url'].$hash.'.png';
+		
 		// Create
-		if(imagepng($captcha,$image_fullpath)) return $image_fullpath;
-		else return false;
+		if(!imagepng($captcha,$image_fullpath)){
+			throw new Exception('could not write file '.$image_fullpath);
+		}
+		
+		return $image_fullurl;
 		
 	}
 	
@@ -133,7 +136,7 @@ class SimpleCaptchaHelper {
 		$angle = rand( $this->config['angle_min'], $this->config['angle_max'] ) * (rand(0, 1) == 1 ? -1 : 1);
 
 		// Select font randomly
-		$font = $this->config['fonts'][rand(0, count($this->config['fonts']) - 1)];
+		$font = $this->config['assets_path'].$this->config['fonts'][rand(0, count($this->config['fonts']) - 1)];
 
 		// Verify font file exists
 		if( !file_exists($font) ) throw new Exception('Font file not found: ' . $font);
@@ -160,9 +163,9 @@ class SimpleCaptchaHelper {
 		}
 
 		// Draw text
-		imagettftext($captcha, $font_size, $angle, $text_pos_x, $text_pos_y, $color, $font, $this->config['code']);	
+		imagettftext($captcha, $font_size, $angle, $text_pos_x, $text_pos_y, $color, $font, $this->config['code']);
 
-		$return $captcha;
+		return $captcha;
 	}
 	
 	/**
