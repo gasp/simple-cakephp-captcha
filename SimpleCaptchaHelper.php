@@ -28,7 +28,9 @@ class SimpleCaptchaHelper {
 		'shadow' => true,
 		'shadow_color' => '#CCC',
 		'shadow_offset_x' => -2,
-		'shadow_offset_y' => 2
+		'shadow_offset_y' => 2,
+		'images_path' => '.',
+		'images_url' => '.'
 	);
 	
 	/**
@@ -53,6 +55,8 @@ class SimpleCaptchaHelper {
 		// Restrict certain values
 		
 		if( $this->config['assets_path'] == '.')	$this->config['assets_path'] = dirname(__FILE__);
+		if( $this->config['images_path'] == '.')	$this->config['images_path'] = './';
+		if( $this->config['images_url'] == '.')		$this->config['images_url'] = './';
 		
 		if( $this->config['min_length'] < 1 ) 	$this->config['min_length'] = 1;
 		if( $this->config['angle_min'] < 0 ) 	$this->config['angle_min'] = 0;
@@ -91,17 +95,74 @@ class SimpleCaptchaHelper {
 	 * @return string $imageurl
 	 * @author gaspard
 	 */
-	public function store($value='') {
-		# code...
+	public function store() {
+		$hash = md5($this->config['code']);
+		$captcha = $this->generate();
+
+		// image path
+		$image_fullpath = $this->config['images_path'].$hash.'.png';
+
+		// Create
+		if(imagepng($captcha,$image_fullpath)) return $image_fullpath;
+		else return false;
+		
 	}
 	
-	private function generate(){
+	/**
+	 * generate image
+	 *
+	 * @return Object image (to store or to display)
+	 * @author gaspard
+	 */
+	public function generate(){
 		
 		// Pick random background, get info, and start captcha
 		$background = $this->config['png_backgrounds'][rand(0, count($this->config['png_backgrounds']) -1)];
-		$background = $this->config['assets_path'].$background;
+		$background = $this->config['assets_path'].DIRECTORY_SEPARATOR.$background;
 		list($bg_width, $bg_height, $bg_type, $bg_attr) = getimagesize($background);
 		
+		
+		$captcha = imagecreatefrompng($background);
+	    imagealphablending($captcha, true);
+	    imagesavealpha($captcha , true);
+
+		$color = $this->hextorgb($this->config['color']);
+		$color = imagecolorallocate($captcha, $color['r'], $color['g'], $color['b']);
+		
+		// Determine text angle
+		$angle = rand( $this->config['angle_min'], $this->config['angle_max'] ) * (rand(0, 1) == 1 ? -1 : 1);
+
+		// Select font randomly
+		$font = $this->config['fonts'][rand(0, count($this->config['fonts']) - 1)];
+
+		// Verify font file exists
+		if( !file_exists($font) ) throw new Exception('Font file not found: ' . $font);
+
+		//Set the font size.
+		$font_size = rand($this->config['min_font_size'], $this->config['max_font_size']);
+		$text_box_size = imagettfbbox($font_size, $angle, $font, $this->config['code']);
+
+		// Determine text position
+		$box_width = abs($text_box_size[6] - $text_box_size[2]);
+		$box_height = abs($text_box_size[5] - $text_box_size[1]);
+		$text_pos_x_min = 0;
+		$text_pos_x_max = ($bg_width) - ($box_width);
+		$text_pos_x = rand($text_pos_x_min, $text_pos_x_max);			
+		$text_pos_y_min = $box_height;
+		$text_pos_y_max = ($bg_height) - ($box_height / 2);
+		$text_pos_y = rand($text_pos_y_min, $text_pos_y_max);
+
+		// Draw shadow
+		if( $this->config['shadow'] ){
+			$shadow_color = $this->hextorgb($this->config['shadow_color']);
+		 	$shadow_color = imagecolorallocate($captcha, $shadow_color['r'], $shadow_color['g'], $shadow_color['b']);
+			imagettftext($captcha, $font_size, $angle, $text_pos_x + $this->config['shadow_offset_x'], $text_pos_y + $this->config['shadow_offset_y'], $shadow_color, $font, $this->config['code']);	
+		}
+
+		// Draw text
+		imagettftext($captcha, $font_size, $angle, $text_pos_x, $text_pos_y, $color, $font, $this->config['code']);	
+
+		$return $captcha;
 	}
 	
 	/**
