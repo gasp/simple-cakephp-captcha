@@ -95,5 +95,32 @@ class SimpleCaptchaHelper {
 		# code...
 	}
 
+	
+	/**
+	 * hextorgb method recodes hex2rgb function
+	 * if it is native, let's just use it
+	 * @param string HEX code
+	 * @return array or string RGB code
+	 */
+	private function hextorgb($hex_str, $return_string = false, $separator = ','){
+		if( !function_exists('hex2rgb') ) {
+			$hex_str = preg_replace("/[^0-9A-Fa-f]/", '', $hex_str); // Gets a proper hex string
+			$rgb_array = array();
+			if( strlen($hex_str) == 6 ) {
+				$color_val = hexdec($hex_str);
+				$rgb_array['r'] = 0xFF & ($color_val >> 0x10);
+				$rgb_array['g'] = 0xFF & ($color_val >> 0x8);
+				$rgb_array['b'] = 0xFF & $color_val;
+			} elseif( strlen($hex_str) == 3 ) {
+				$rgb_array['r'] = hexdec(str_repeat(substr($hex_str, 0, 1), 2));
+				$rgb_array['g'] = hexdec(str_repeat(substr($hex_str, 1, 1), 2));
+				$rgb_array['b'] = hexdec(str_repeat(substr($hex_str, 2, 1), 2));
+			} else {
+				return false;
+			}
+			return $return_string ? implode($separator, $rgb_array) : $rgb_array;
+		}
+		else return hex2rgb($hex_str, $return_string = false, $separator = ',');
+	}
 
 }
