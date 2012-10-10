@@ -2,12 +2,15 @@
 
 _Based on_
 _Cory LaViska's work for A Beautiful Site, LLC. (http://abeautifulsite.net/)_
+see http://github.com/claviska/simple-php-captcha
 _Dual licensed under the MIT / GPLv2 licenses_
 
 
 ## Demo
 
 http://labs.abeautifulsite.dev/simple-php-captcha/
+
+
 
 
 ## Requirements
@@ -28,50 +31,50 @@ Create a app/webroot/img/captcha/ directory, writable by apache
 
 ### Declare the component in your Controller
 
-`class UsersController extends AppController {
+	class UsersController extends AppController {
 
-	public $components = array('Captcha');
-`
+		public $components = array('Captcha');
+
 
 ### Declare your captcha in yor Controller
-`
-$this->Captcha->create(
-	array(
-		'images_url'=>'/img/captcha/',
-		'images_path'=>WWW_ROOT.DS.'img/captcha/',
-		'assets_path'=>WWW_ROOT.DS.'img/'
-	)
-);
-$this->Session->write('Catcha.code',$this->Captcha->code());
-$this->set('captcha_url',$this->Captcha->store());
-`
+
+	$this->Captcha->create(
+		array(
+			'images_url'=>'/img/captcha/',
+			'images_path'=>WWW_ROOT.DS.'img/captcha/',
+			'assets_path'=>WWW_ROOT.DS.'img/'
+		)
+	);
+	$this->Session->write('Catcha.code',$this->Captcha->code());
+	$this->set('captcha_url',$this->Captcha->store());
+
 ### Check if the captcha has been properly entered in your Controller
-`
-public function token($id = null,$token = null) {
 
-	$this->User->recursive = 0;
-	$this->User->id = $id;
-	if (!$this->User->exists()) {
-		throw new NotFoundException(__('Invalid user'));
-	}
-	$user = $this->User->read(null, $id);
+	public function token($id = null,$token = null) {
+
+		$this->User->recursive = 0;
+		$this->User->id = $id;
+		if (!$this->User->exists()) {
+			throw new NotFoundException(__('Invalid user'));
+		}
+		$user = $this->User->read(null, $id);
 	
-	if ($user['User']['token'] != $token) {
-		throw new NotFoundException(__('Invalid token'));
-	}
+		if ($user['User']['token'] != $token) {
+			throw new NotFoundException(__('Invalid token'));
+		}
 
-	if ($this->request->is('post') || $this->request->is('put')) {
-		// check captcha
-		if($this->request->data['User']['code'] == $this->Session->read('Catcha.code')){
-`
+		if ($this->request->is('post') || $this->request->is('put')) {
+			// check captcha
+			if($this->request->data['User']['code'] == $this->Session->read('Catcha.code')){
+
 
 ### display the image in the View
 inside your form form
 	
-`<p><img src="<?php echo $captcha_url; ?>" alt="captcha"></p>
-<dl>
-	<dt><?php echo __('Code'); ?></dt>
-	<dd>
-		<?php echo $this->Form->input('code',array('label'=>false,'type'=>'text','value'=>'')); ?>
-	</dd>
-</dl>`
+	<p><img src="<?php echo $captcha_url; ?>" alt="captcha"></p>
+	<dl>
+		<dt><?php echo __('Code'); ?></dt>
+		<dd>
+			<?php echo $this->Form->input('code',array('label'=>false,'type'=>'text','value'=>'')); ?>
+		</dd>
+	</dl>
