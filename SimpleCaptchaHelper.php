@@ -73,6 +73,16 @@ class SimpleCaptchaHelper {
 			}
 		}
 	}
+	
+	/**
+	 * code displays the current code (small helper)
+	 *
+	 * @return string code
+	 * @author gaspard
+	 */
+	public function code() {
+		return $this->config['code'];
+	}
 
 	/**
 	 * stores the image
@@ -84,5 +94,6 @@ class SimpleCaptchaHelper {
 	public function store($value='') {
 		# code...
 	}
+
 
 }
